@@ -1,101 +1,924 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-MZ">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>InfroPay - Login</title>
+<title>Checkout</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Plus Jakarta Sans',sans-serif;
+    box-sizing:border-box;
 }
 
 body{
-background:#000;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+    margin:0;
+    padding:20px;
+    background:#f5f6f8;
+    font-family:Arial,sans-serif;
+    color:#111;
 }
 
-.login-box{
-width:100%;
-max-width:400px;
-background:#141414;
-padding:30px;
-border-radius:15px;
+.checkout{
+    width:100%;
+    max-width:430px;
+    margin:20px auto;
+    background:white;
+    padding:25px;
+    border-radius:22px;
+    box-shadow:0 10px 30px rgba(0,0,0,.07);
+}
+
+.logo{
+    font-size:20px;
+    font-weight:800;
+    color:#16a56a;
+    margin-bottom:25px;
 }
 
 h1{
-text-align:center;
-color:#fff;
-margin-bottom:30px;
+    margin:0;
+    font-size:25px;
+}
+
+.descricao{
+    color:#777;
+    font-size:14px;
+    margin:8px 0 25px;
+}
+
+.campo{
+    margin-bottom:16px;
+}
+
+label{
+    display:block;
+    font-size:13px;
+    font-weight:bold;
+    margin-bottom:7px;
 }
 
 input{
-width:100%;
-height:50px;
-margin-bottom:15px;
-padding:15px;
-border:none;
-border-radius:10px;
-background:#222;
-color:#fff;
-font-size:15px;
+    width:100%;
+    height:50px;
+    padding:0 14px;
+    border:1px solid #e2e4e8;
+    border-radius:12px;
+    background:#fafafa;
+    font-size:15px;
+    outline:none;
 }
 
-button{
-width:100%;
-height:50px;
-border:none;
-border-radius:10px;
-background:#00e676;
-color:#000;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
+input:focus{
+    border-color:#16a56a;
+    background:white;
 }
 
-button:hover{
-opacity:.9;
+.valor{
+    position:relative;
 }
 
-a{
-display:block;
-text-align:center;
-margin-top:15px;
-color:#fff;
-text-decoration:none;
+.valor input{
+    padding-right:55px;
+}
+
+.valor span{
+    position:absolute;
+    right:15px;
+    top:17px;
+    color:#777;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.btn-pagar{
+    width:100%;
+    height:52px;
+    margin-top:8px;
+    border:none;
+    border-radius:13px;
+    background:#16a56a;
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.btn-pagar:disabled{
+    opacity:.6;
+}
+
+.btn-notificacao{
+    width:100%;
+    height:45px;
+    margin-bottom:20px;
+
+    border:1px solid #dfe3e7;
+    border-radius:12px;
+
+    background:#f8f9fa;
+    color:#333;
+
+    font-size:13px;
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.btn-notificacao.ativa{
+    color:#168a5a;
+    background:#ecfaf4;
+    border-color:#b9ead5;
+}
+
+.erro{
+    color:#d93025;
+    font-size:13px;
+    margin-top:10px;
+    display:none;
+}
+
+
+/* NOTIFICAÇÃO DENTRO DA PÁGINA */
+
+.notificacao{
+    position:fixed;
+
+    left:50%;
+    bottom:20px;
+
+    width:calc(100% - 30px);
+    max-width:400px;
+
+    transform:translate(-50%,150px);
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    padding:14px;
+
+    background:#15171c;
+    color:white;
+
+    border-radius:17px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+
+    transition:.35s;
+
+    z-index:9999;
+}
+
+.notificacao.mostrar{
+    transform:translate(-50%,0);
+}
+
+.icone{
+    width:42px;
+    height:42px;
+
+    flex-shrink:0;
+
+    border-radius:12px;
+
+    background:#27b77b;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:21px;
+    font-weight:bold;
+}
+
+.notificacao strong{
+    display:block;
+    font-size:14px;
+    margin-bottom:4px;
+}
+
+.notificacao span{
+    color:#c9cbd0;
+    font-size:13px;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<div class="login-box">
 
-<h1>InfroPay</h1>
+<div class="checkout">
 
-<input type="email" id="email" placeholder="E-mail">
+    <div class="logo">
+        INFROPAY
+    </div>
 
-<input type="password" id="senha" placeholder="Senha">
 
-<button onclick="login()">Entrar</button>
+    <h1>
+        Finalizar compra
+    </h1>
 
-<a href="cadastro.html">Criar conta</a>
+
+    <p class="descricao">
+        Preencha os seus dados para realizar a compra.
+    </p>
+
+
+    <!-- ATIVAR NOTIFICAÇÕES -->
+
+    <button
+        type="button"
+        class="btn-notificacao"
+        id="btnNotificacao"
+    >
+        🔔 Ativar notificações
+    </button>
+
+
+    <form id="checkoutForm">
+
+
+        <!-- NOME -->
+
+        <div class="campo">
+
+            <label>
+                Nome completo
+            </label>
+
+            <input
+                type="text"
+                id="nome"
+                placeholder="Digite o seu nome"
+                required
+            >
+
+        </div>
+
+
+        <!-- TELEFONE -->
+
+        <div class="campo">
+
+            <label>
+                Número de telefone
+            </label>
+
+            <input
+                type="tel"
+                id="telefone"
+                placeholder="84 123 4567"
+                required
+            >
+
+        </div>
+
+
+        <!-- PRODUTO -->
+
+        <div class="campo">
+
+            <label>
+                Produto
+            </label>
+
+            <input
+                type="text"
+                id="produto"
+                placeholder="Nome do produto"
+                required
+            >
+
+        </div>
+
+
+        <!-- VALOR -->
+
+        <div class="campo">
+
+            <label>
+                Valor
+            </label>
+
+            <div class="valor">
+
+                <input
+                    type="number"
+                    id="valor"
+                    placeholder="190"
+                    min="1"
+                    step="0.01"
+                    required
+                >
+
+                <span>
+                    MT
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTÃO -->
+
+        <button
+            type="submit"
+            class="btn-pagar"
+            id="btnPagar"
+        >
+            Pagar agora
+        </button>
+
+
+        <!-- ERRO -->
+
+        <div
+            class="erro"
+            id="erro"
+        ></div>
+
+
+    </form>
 
 </div>
 
-<script type="module" src="js/login.js"></script>
+
+
+<!-- NOTIFICAÇÃO DA PÁGINA -->
+
+<div
+    class="notificacao"
+    id="notificacao"
+>
+
+    <div class="icone">
+        ✓
+    </div>
+
+    <div>
+
+        <strong>
+            Venda realizada!
+        </strong>
+
+        <span id="valorNotificacao">
+            Valor: 0,00 MT
+        </span>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+
+/*
+==================================================
+SUPABASE
+==================================================
+*/
+
+const SUPABASE_URL =
+"https://jwuhlioxueavuxqlzpxk.supabase.co";
+
+
+const SUPABASE_KEY =
+"sb_publishable_uSUiqCPM0llHZwUlJX5pMw_zrH0jCp-";
+
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+
+/*
+==================================================
+ELEMENTOS
+==================================================
+*/
+
+const formulario =
+document.getElementById(
+    "checkoutForm"
+);
+
+const botao =
+document.getElementById(
+    "btnPagar"
+);
+
+const notificacao =
+document.getElementById(
+    "notificacao"
+);
+
+const valorNotificacao =
+document.getElementById(
+    "valorNotificacao"
+);
+
+const erro =
+document.getElementById(
+    "erro"
+);
+
+const btnNotificacao =
+document.getElementById(
+    "btnNotificacao"
+);
+
+
+
+/*
+==================================================
+VERIFICAR NOTIFICAÇÕES
+==================================================
+*/
+
+function verificarNotificacoes(){
+
+    if(!("Notification" in window)){
+
+        btnNotificacao.innerText =
+        "❌ Notificações não suportadas";
+
+        btnNotificacao.disabled =
+        true;
+
+        return;
+    }
+
+
+    if(
+        Notification.permission ===
+        "granted"
+    ){
+
+        btnNotificacao.innerText =
+        "✓ Notificações ativadas";
+
+        btnNotificacao.classList.add(
+            "ativa"
+        );
+
+    }
+
+    else if(
+        Notification.permission ===
+        "denied"
+    ){
+
+        btnNotificacao.innerText =
+        "🔕 Notificações bloqueadas";
+
+    }
+
+}
+
+
+
+/*
+==================================================
+ATIVAR NOTIFICAÇÕES
+==================================================
+*/
+
+async function ativarNotificacoes(){
+
+    if(!("Notification" in window)){
+
+        alert(
+            "O seu navegador não suporta notificações."
+        );
+
+        return;
+    }
+
+
+    try{
+
+        const permissao =
+        await Notification.requestPermission();
+
+
+        if(
+            permissao ===
+            "granted"
+        ){
+
+            btnNotificacao.innerText =
+            "✓ Notificações ativadas";
+
+            btnNotificacao.classList.add(
+                "ativa"
+            );
+
+
+            /*
+            NOTIFICAÇÃO DE TESTE
+            */
+
+            new Notification(
+                "Venda realizada",
+                {
+                    body:
+                    "Valor 0,00 MT"
+                }
+            );
+
+        }
+
+        else if(
+            permissao ===
+            "denied"
+        ){
+
+            btnNotificacao.innerText =
+            "🔕 Notificações bloqueadas";
+
+            alert(
+                "As notificações foram bloqueadas. Ative-as nas configurações do navegador."
+            );
+
+        }
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Erro:",
+            error
+        );
+
+    }
+
+}
+
+
+btnNotificacao.addEventListener(
+    "click",
+    ativarNotificacoes
+);
+
+
+
+/*
+==================================================
+NOTIFICAÇÃO DO ANDROID
+==================================================
+*/
+
+function mostrarNotificacaoSistema(
+    valor
+){
+
+    if(
+        !("Notification" in window)
+    ){
+        return;
+    }
+
+
+    if(
+        Notification.permission !==
+        "granted"
+    ){
+        return;
+    }
+
+
+    const valorFormatado =
+    Number(valor).toLocaleString(
+        "pt-MZ",
+        {
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        }
+    );
+
+
+    try{
+
+        const notificacaoSistema =
+        new Notification(
+            "Venda realizada",
+            {
+
+                body:
+                "Valor " +
+                valorFormatado +
+                " MT",
+
+                tag:
+                "venda-" +
+                Date.now(),
+
+                renotify:true
+
+            }
+        );
+
+
+        notificacaoSistema.onclick =
+        function(){
+
+            window.focus();
+
+            notificacaoSistema.close();
+
+        };
+
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Erro na notificação:",
+            error
+        );
+
+    }
+
+}
+
+
+
+/*
+==================================================
+NOTIFICAÇÃO DENTRO DA PÁGINA
+==================================================
+*/
+
+function mostrarNotificacaoPagina(
+    valor
+){
+
+    const valorFormatado =
+    Number(valor).toLocaleString(
+        "pt-MZ",
+        {
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        }
+    );
+
+
+    valorNotificacao.innerText =
+    "Valor: " +
+    valorFormatado +
+    " MT";
+
+
+    notificacao.classList.add(
+        "mostrar"
+    );
+
+
+    setTimeout(
+        function(){
+
+            notificacao.classList.remove(
+                "mostrar"
+            );
+
+        },
+        4000
+    );
+
+}
+
+
+
+/*
+==================================================
+ENVIAR VENDA
+==================================================
+*/
+
+formulario.addEventListener(
+    "submit",
+    async function(event){
+
+        event.preventDefault();
+
+
+        /*
+        ESCONDER ERRO
+        */
+
+        erro.style.display =
+        "none";
+
+
+        /*
+        DESATIVAR BOTÃO
+        */
+
+        botao.disabled =
+        true;
+
+        botao.innerText =
+        "Registrando...";
+
+
+        /*
+        PEGAR DADOS
+        */
+
+        const nome =
+        document
+        .getElementById("nome")
+        .value
+        .trim();
+
+
+        const telefone =
+        document
+        .getElementById("telefone")
+        .value
+        .trim();
+
+
+        const produto =
+        document
+        .getElementById("produto")
+        .value
+        .trim();
+
+
+        const valor =
+        Number(
+            document
+            .getElementById("valor")
+            .value
+        );
+
+
+        /*
+        VALIDAR VALOR
+        */
+
+        if(
+            !valor ||
+            valor <= 0
+        ){
+
+            erro.innerText =
+            "Digite um valor válido.";
+
+            erro.style.display =
+            "block";
+
+
+            botao.disabled =
+            false;
+
+            botao.innerText =
+            "Pagar agora";
+
+            return;
+
+        }
+
+
+
+        /*
+        ==========================================
+        SALVAR NO SUPABASE
+        ==========================================
+        */
+
+        const resultado =
+        await supabaseClient
+        .from("vendas")
+        .insert({
+
+            nome: nome,
+
+            telefone: telefone,
+
+            produto: produto,
+
+            valor: valor,
+
+            status: "realizada"
+
+        })
+        .select()
+        .single();
+
+
+
+        /*
+        ==========================================
+        VERIFICAR ERRO
+        ==========================================
+        */
+
+        if(resultado.error){
+
+            console.error(
+                resultado.error
+            );
+
+
+            erro.innerText =
+            "Erro ao registrar a venda. Tente novamente.";
+
+
+            erro.style.display =
+            "block";
+
+
+            botao.disabled =
+            false;
+
+
+            botao.innerText =
+            "Pagar agora";
+
+
+            return;
+
+        }
+
+
+
+        /*
+        ==========================================
+        VENDA REGISTRADA
+        ==========================================
+        */
+
+
+        /*
+        NOTIFICAÇÃO DO CELULAR
+        */
+
+        mostrarNotificacaoSistema(
+            valor
+        );
+
+
+        /*
+        NOTIFICAÇÃO DA PÁGINA
+        */
+
+        mostrarNotificacaoPagina(
+            valor
+        );
+
+
+        /*
+        LIMPAR FORMULÁRIO
+        */
+
+        formulario.reset();
+
+
+        /*
+        RESTAURAR BOTÃO
+        */
+
+        botao.disabled =
+        false;
+
+        botao.innerText =
+        "Pagar agora";
+
+    }
+);
+
+
+
+/*
+==================================================
+INICIAR
+==================================================
+*/
+
+verificarNotificacoes();
+
+</script>
+
+
 </body>
+
 </html>
